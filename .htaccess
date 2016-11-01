@@ -1,0 +1,5 @@
+# RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+# RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+# It is also required to enable CGI scripting in Apache!
