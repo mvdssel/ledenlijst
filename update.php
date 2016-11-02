@@ -5,22 +5,14 @@
 // ini_set('display_errors', 'on');
 
 require_once 'GroepsadminClient.class.php';
-require_once 'vendor/autoload.php';
-    use Katzgrau\KLogger\Logger;
-    use Psr\Log\LogLevel;
 require_once 'vendor/PhpSpreadsheet/src/Bootstrap.php';
     use PhpOffice\PhpSpreadsheet\IOFactory;
     use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
     use PhpOffice\PhpSpreadsheet\Spreadsheet;
 require_once 'util.php';
 
-const FILTERS = ['Leden', 'Leiding', 'Oudleiding'];
-
-$logger = new Logger(
-    __DIR__.'/logs', // log destination
-    LogLevel::DEBUG, // level to be logged
-    ['filename' => 'ledenlijst.log'] // extra options
-);
+define(DESTINATION_FILE, __DIR__.'/../ledenlijst.resources/ledenlijst.xlsx'); // only define allows expressions
+const FILTERS = ['Leden', 'Leiding', 'Oudleiding']; // only const allows arrays
 
 if (isset($_SERVER['PHP_AUTH_USER'])) {
     try {
@@ -30,22 +22,20 @@ if (isset($_SERVER['PHP_AUTH_USER'])) {
         $client = new GroepsadminClient($user, $pass, $logger);
 
         if($client->isLoggedIn()) {
+            $logger->info("$user: Updating ledenlijst");
             updateLedenlijst($client, $logger);
         }
         else {
-            authFailed('Error: Authentication failed');
+            authFailed('Authentication failed');
         }
     } catch (Exception $e) {
-        $logger->error($e);
-        errorOccurred('Error: Uncaught exception occurred');
+        errorOccurred('Uncaught exception occurred', $logger, $e);
     }
 } else {
-    authFailed('Error: Received no credentials');
+    authFailed('Received no credentials');
 }
 
 function updateLedenlijst($client, $logger) {
-    $logger->debug('Starting update');
-
     // Prevents problems with flushing output streams
     header('Content-type: text/html; charset=utf-8');
 
@@ -87,7 +77,7 @@ function updateLedenlijst($client, $logger) {
     $logger->debug("Writing to filesystem");
     $objPHPExcel->setActiveSheetIndex(0);
     $objWriter = new Xlsx($objPHPExcel);
-    $objWriter->save('ledenlijst.xlsx');
+    $objWriter->save(DESTINATION_FILE);
 
     write('Success!');
     write('<a href="/">Download ready</a>');

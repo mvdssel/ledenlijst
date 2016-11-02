@@ -245,7 +245,6 @@ class GroepsadminClient
             return TRUE;
         }
         $this->logger->warning("Failed to extract BAREBONE_ME");
-        echo $body;
         return FALSE;
     }
 
