@@ -26,7 +26,7 @@ class GroepsadminClient
 
     /**
      * Constructor
-     * Initiates the Guzzle client and loggingginggings in the user
+     * Initiates the Guzzle client and logs in
      * @param logger $logger A logger PSR-3 compliant logging class
      */
     public function __construct1($logger) {
@@ -35,7 +35,7 @@ class GroepsadminClient
 
     /**
      * Constructor
-     * Initiates the Guzzle client and loggingginggings in the user
+     * Initiates the Guzzle client and logs in
      * @param string $user
      * @param string $pass
      * @param logger $logger A logger PSR-3 compliant logging class
@@ -65,7 +65,7 @@ class GroepsadminClient
 
     /**
      * Destruct
-     * loggingginggings out the user if necessary
+     * logs out if necessary
      */
     public function __destruct() {
         if(isset($this->user)) $this->logout();
@@ -144,15 +144,15 @@ class GroepsadminClient
     }
 
     /**
-     * Performs a request to logger the user and extracts all user specific data
+     * Performs a request to logger and extracts all user specific data
      * @param string $user username
      * @param string $password password
      * @return bool TRUE if request was perforemd successful
      */
     public function login($user, $pass) {
-        // loggingginggingout if logged in
+        // logout if logged in
         if(isset($this->user)) {
-            $this->loggingginggingout();
+            $this->logout();
         }
 
         $this->logger->debug("{$user}\tLogging in");
@@ -183,14 +183,14 @@ class GroepsadminClient
     }
 
     /**
-     * Performs a request to loggingginggingout the user.
+     * Performs a request to logout.
      * Resets all user data if the request was successful.
      * @return bool TRUE if request was perforemd successful
      */
     public function logout() {
         $this->logger->debug("{$this->user}\tLogging out");
 
-        // Perform loggingginggingout request
+        // Perform logout request
         $res = $this->client->request('GET', 'logout.do');
 
         if($res->getStatusCode() === 200) {
@@ -205,7 +205,7 @@ class GroepsadminClient
     }
 
     /**
-     * Returns if the user successfully loggingginggingged in as Leiding
+     * Returns if successfully loggingginggingged in as Leiding
      * @return bool
      */
     public function isLoggedIn() {
@@ -213,7 +213,7 @@ class GroepsadminClient
     }
 
     /**
-     * Util method to extract all filters defined for the user
+     * Util method to extract all filters defined for
      * @param string $body HTTP response body
      * @return bool TRUE if it was able to extract anything
      */
@@ -260,6 +260,6 @@ class GroepsadminClient
     private $logger;
 
     // Extraction patterns
-    const BAREBONE_ME_PATTERN = '|name="BAREBONE_ME" value="([^"]+)"|';
-    const FILTER_PATTERN = '|value="(FILTER_AKTIVEREN_100_[^"]+)"[^>]*>\s*([^<\s]+)\s*</option>|';
+    const BAREBONE_ME_PATTERN = '|name="BAREBONE_ME"\s+value="([^"]+)"|';
+    const FILTER_PATTERN = '|value="(FILTER_AKTIVEREN_100_[^"]+)"[^>]*>\s*([^<]+)\s*(\((A2420G)\)\s*)?</option>|';
 }
