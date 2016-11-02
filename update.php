@@ -1,44 +1,56 @@
 <?php
 
 // DEV only
-// error_reporting(E_ALL);
-// ini_set('display_errors', 'on');
+error_reporting(E_ALL);
+ini_set('display_errors', 'on');
 
-require_once 'util.php';
 require_once 'GroepsadminClient.class.php';
+require_once 'vendor/autoload.php';
+    use Katzgrau\KLogger\Logger;
+    use Psr\Log\LogLevel;
 require_once 'vendor/PhpSpreadsheet/src/Bootstrap.php';
-
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
+    use PhpOffice\PhpSpreadsheet\IOFactory;
+    use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+    use PhpOffice\PhpSpreadsheet\Spreadsheet;
+require_once 'util.php';
 
 const FILTERS = ['Leden', 'Leiding', 'Oudleiding'];
+
+$logger = new Logger(
+    __DIR__.'/logs', // log destination
+    LogLevel::DEBUG, // level to be logged
+    ['filename' => 'ledenlijst.log'] // extra options
+);
+
+$_SERVER['PHP_AUTH_USER'] = 'mvdssel';
+$_SERVER['PHP_AUTH_PW'] = 'Groepsleiding 16-17';
 
 if (isset($_SERVER['PHP_AUTH_USER'])) {
     try {
         $user = $_SERVER['PHP_AUTH_USER'];
         $pass = $_SERVER['PHP_AUTH_PW'];
-        $destination = $_SERVER['DOCUMENT_ROOT'];
 
-        file_logging($user, 'update');
+        $client = new GroepsadminClient($user, $pass, $logger);
 
-        updateLedenlijst($user, $pass, $destination);
+        if($client->isLoggedIn()) {
+            updateLedenlijst($client, $logger);
+        }
+        else {
+            authFailed('Error: Authentication failed');
+        }
     } catch (Exception $e) {
-        // print_r($e);
-        authFailed('Error: Authentication failed or Error occurred');
-        exit(1);
+        $logger->error($e);
+        errorOccurred('Error: Uncaught exception occurred');
     }
 } else {
-    authFailed('Error: Received no Basic Authentitication credentials');
+    authFailed('Error: Received no credentials');
 }
 
-function updateLedenlijst($user, $pass, $destination) {
+function updateLedenlijst($client, $logger) {
     // Prevents problems with flushing output streams
     header('Content-type: text/html; charset=utf-8');
 
     // Get all filter values
-    logging("Logging in as $user");
-    $client = new GroepsadminClient($user, $pass);
     $filterValues = $client->downloadFilters(FILTERS);
 
     // Init the XLS reader & object
@@ -49,7 +61,7 @@ function updateLedenlijst($user, $pass, $destination) {
     // Add each of the filter values to different worksheets
     $sheetIndex = 0;
     foreach ($filterValues as $filter => &$value) {
-        logging("Parsing filter $filter");
+        $logger->debug("Parsing filter $filter");
 
         // Write filter values to temp file
         $file = tempnam(sys_get_temp_dir(), 'ledenlijst_');
@@ -73,11 +85,11 @@ function updateLedenlijst($user, $pass, $destination) {
     }
 
     // Write the XLS
-    logging("Writing to filesystem");
+    $logger->debug("Writing to filesystem");
     $objPHPExcel->setActiveSheetIndex(0);
     $objWriter = new Xlsx($objPHPExcel);
-    $objWriter->save("$destination/ledenlijst.xlsx");
+    $objWriter->save('ledenlijst.xlsx');
 
-    logging("Success!");
-    echo '<a href="/">Download ready</a>';
+    write('Success!');
+    write('<a href="/">Download ready</a>');
 }

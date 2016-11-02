@@ -26,7 +26,7 @@ class GroepsadminClient
 
     /**
      * Constructor
-     * Initiates the Guzzle client and logs in the user
+     * Initiates the Guzzle client and loggingginggings in the user
      * @param logger $logger A logger PSR-3 compliant logging class
      */
     public function __construct1($logger) {
@@ -35,7 +35,7 @@ class GroepsadminClient
 
     /**
      * Constructor
-     * Initiates the Guzzle client and logs in the user
+     * Initiates the Guzzle client and loggingginggings in the user
      * @param string $user
      * @param string $pass
      * @param logger $logger A logger PSR-3 compliant logging class
@@ -65,7 +65,7 @@ class GroepsadminClient
 
     /**
      * Destruct
-     * Logs out the user if necessary
+     * loggingginggings out the user if necessary
      */
     public function __destruct() {
         if(isset($this->user)) $this->logout();
@@ -93,7 +93,7 @@ class GroepsadminClient
     public function downloadFilter($filter) {
         $this->setFilter($filter);
         $res = $this->download();
-        return $res->getBody();
+        return $res;
     }
 
     /**
@@ -102,7 +102,7 @@ class GroepsadminClient
      * @return string CVS for a filter, FALSE if the request failed
      */
     public function download() {
-        $this->logger->debug("Downloading CSV for user {$this->user}");
+        $this->logger->debug("{$this->user}: Downloading CSV");
 
         // Perform request to download CSV data
         $res = $this->client->request('GET', 'ledenlijst.csv');
@@ -110,7 +110,7 @@ class GroepsadminClient
         if($res->getStatusCode() == 200) {
             return $res->getBody()->getContents();
         }
-        $this->logger->warning("Failed to download CSV for filter for user {$this->user}");
+        $this->logger->warning("{$this->user}: Failed to download CSV");
         return FALSE;
     }
 
@@ -120,11 +120,11 @@ class GroepsadminClient
      * @return bool TRUE if request was perforemd successful
      */
     public function setFilter($filter) {
-        $this->logger->debug("Setting filter $filter for user {$this->user}");
+        $this->logger->debug("{$this->user}: Setting filter to $filter");
 
         // Argument check
         if(!isset($this->filters) || !isset($this->filters[$filter])) {
-            $this->logger->error("Trying to set undefined filter $filter for user {$this->user}");
+            $this->logger->error("{$this->user}: Trying to set undefined filter $filter");
             throw new Exception('Trying to set undefined filter');
         }
 
@@ -139,58 +139,58 @@ class GroepsadminClient
         if($res->getStatusCode() == 200) {
             return TRUE;
         }
-        $this->logger->warning("Failed to set filter $filter for user {$this->user}");
+        $this->logger->warning("{$this->user}: Failed to set filter to $filter");
         return FALSE;
     }
 
     /**
-     * Performs a request to login the user and extracts all user specific data
+     * Performs a request to logger the user and extracts all user specific data
      * @param string $user username
      * @param string $password password
      * @return bool TRUE if request was perforemd successful
      */
     public function login($user, $pass) {
-        // Logout if logged in
+        // loggingginggingout if logged in
         if(isset($this->user)) {
-            $this->logout();
+            $this->loggingginggingout();
         }
 
-        $this->logger->debug("Logging in as $user");
+        $this->logger->debug("{$user}: Logging in");
 
         // Set SESSION_ID cookie
         $this->client->request('GET');
 
-        // Perform login request
+        // Perform logger request
         $res = $this->client->request('POST', 'login.do', [
             'form_params' => [
                 'lid_lidnummer' => $user,
                 'lid_paswoord' => $pass
             ]
         ]);
+        $body = $res->getBody()->getContents();
 
-        if($res->getStatusCode() == 200) {
+        // Set user attributes 
+        if($res->getStatusCode() == 200
+            && $this->extractBAREBONE_ME($body)
+            && $this->extractFilters($body)
+        ) {
             $this->user = $user;
-
-            // Set user attributes 
-            $body = $res->getBody()->getContents();
-            $this->extractBAREBONE_ME($body);
-            $this->extractFilters($body);
-
             return TRUE;
         }
-        $this->logger->warning("Failed to login as $user");
+
+        $this->logger->warning("$user: Failed to login");
         return FALSE;
     }
 
     /**
-     * Performs a request to logout the user.
+     * Performs a request to loggingginggingout the user.
      * Resets all user data if the request was successful.
      * @return bool TRUE if request was perforemd successful
      */
     public function logout() {
-        $this->logger->debug("Logging out as {$this->user}");
+        $this->logger->debug("{$this->user}: Logging out");
 
-        // Perform logout request
+        // Perform loggingginggingout request
         $res = $this->client->request('GET', 'logout.do');
 
         if($res->getStatusCode() === 200) {
@@ -200,15 +200,15 @@ class GroepsadminClient
 
             return TRUE;
         }
-        $this->logger->warning("Failed to logout as {$this->user}");
+        $this->logger->warning("{$this->user}: Failed to logout");
         return FALSE;
     }
 
     /**
-     * Specifies if user is logged in as Leiding
+     * Returns if the user successfully loggingginggingged in as Leiding
      * @return bool
      */
-    public function isLoggedInAsLeiding() {
+    public function isLoggedIn() {
         return isset($this->user) && isset($this->BAREBONE_ME);
     }
 
@@ -229,7 +229,7 @@ class GroepsadminClient
 
             return TRUE;
         }
-        $this->logger->warning("Failed to extract filters for user {$this->user}");
+        $this->logger->warning("Failed to extract filters");
         return FALSE;
     }
 
@@ -244,7 +244,8 @@ class GroepsadminClient
             $this->BAREBONE_ME = $matches[1];
             return TRUE;
         }
-        $this->logger->warning("Failed to extract BAREBONE_ME for user {$this->user}");
+        $this->logger->warning("Failed to extract BAREBONE_ME");
+        echo $body;
         return FALSE;
     }
 
@@ -256,7 +257,7 @@ class GroepsadminClient
     private $BAREBONE_ME;
     private $filters;
 
-    // Logger via dependency injection
+    // logger via dependency injection
     private $logger;
 
     // Extraction patterns
