@@ -102,7 +102,7 @@ class GroepsadminClient
      * @return string CVS for a filter, FALSE if the request failed
      */
     public function download() {
-        $this->logger->debug("{$this->user}: Downloading CSV");
+        $this->logger->debug("{$this->user}\tDownloading CSV");
 
         // Perform request to download CSV data
         $res = $this->client->request('GET', 'ledenlijst.csv');
@@ -110,7 +110,7 @@ class GroepsadminClient
         if($res->getStatusCode() == 200) {
             return $res->getBody()->getContents();
         }
-        $this->logger->warning("{$this->user}: Failed to download CSV");
+        $this->logger->warning("{$this->user}\tFailed to download CSV");
         return FALSE;
     }
 
@@ -120,11 +120,11 @@ class GroepsadminClient
      * @return bool TRUE if request was perforemd successful
      */
     public function setFilter($filter) {
-        $this->logger->debug("{$this->user}: Setting filter to $filter");
+        $this->logger->debug("{$this->user}\tSetting filter to $filter");
 
         // Argument check
         if(!isset($this->filters) || !isset($this->filters[$filter])) {
-            $this->logger->error("{$this->user}: Trying to set undefined filter $filter");
+            $this->logger->error("{$this->user}\tTrying to set undefined filter $filter");
             throw new Exception('Trying to set undefined filter');
         }
 
@@ -139,7 +139,7 @@ class GroepsadminClient
         if($res->getStatusCode() == 200) {
             return TRUE;
         }
-        $this->logger->warning("{$this->user}: Failed to set filter to $filter");
+        $this->logger->warning("{$this->user}\tFailed to set filter to $filter");
         return FALSE;
     }
 
@@ -155,7 +155,7 @@ class GroepsadminClient
             $this->loggingginggingout();
         }
 
-        $this->logger->debug("{$user}: Logging in");
+        $this->logger->debug("{$user}\tLogging in");
 
         // Set SESSION_ID cookie
         $this->client->request('GET');
@@ -178,7 +178,7 @@ class GroepsadminClient
             return TRUE;
         }
 
-        $this->logger->warning("$user: Failed to login");
+        $this->logger->warning("$user\tFailed to login");
         return FALSE;
     }
 
@@ -188,7 +188,7 @@ class GroepsadminClient
      * @return bool TRUE if request was perforemd successful
      */
     public function logout() {
-        $this->logger->debug("{$this->user}: Logging out");
+        $this->logger->debug("{$this->user}\tLogging out");
 
         // Perform loggingginggingout request
         $res = $this->client->request('GET', 'logout.do');
@@ -200,7 +200,7 @@ class GroepsadminClient
 
             return TRUE;
         }
-        $this->logger->warning("{$this->user}: Failed to logout");
+        $this->logger->warning("{$this->user}\tFailed to logout");
         return FALSE;
     }
 

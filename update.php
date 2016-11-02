@@ -22,7 +22,7 @@ if (isset($_SERVER['PHP_AUTH_USER'])) {
         $client = new GroepsadminClient($user, $pass, $logger);
 
         if($client->isLoggedIn()) {
-            $logger->info("$user: Updating ledenlijst");
+            $logger->info("$user\tUpdating ledenlijst");
             updateLedenlijst($client, $logger);
         }
         else {

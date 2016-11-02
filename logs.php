@@ -17,7 +17,7 @@ if (isset($_SERVER['PHP_AUTH_USER'])) {
         $client = new GroepsadminClient($user, $pass, $logger);
 
         if($client->isLoggedIn()) {
-            $logger->info("$user: Viewing logs");
+            $logger->info("$user\tViewing logs");
 
             downloadLogs($logger);
         }

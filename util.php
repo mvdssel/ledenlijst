@@ -8,7 +8,8 @@ $logger = new Logger(
     __DIR__.'/../ledenlijst.resources', // log destination
     LogLevel::DEBUG, // level to be logged
     [
-        'filename' => 'ledenlijst.log'
+        'filename' => 'ledenlijst.log',
+        'logFormat' => '[{date}] [{level}]{level-padding} {message}',
     ]
 );
 
