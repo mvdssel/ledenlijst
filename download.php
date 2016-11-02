@@ -4,36 +4,43 @@
 // error_reporting(E_ALL);
 // ini_set('display_errors', 'on');
 
-require_once 'util.php';
 require_once 'GroepsadminClient.class.php';
+require_once 'vendor/autoload.php';
+    use Katzgrau\KLogger\Logger;
+    use Psr\Log\LogLevel;
+require_once 'util.php';
+
+$logger = new Logger(
+    __DIR__.'/logs', // log destination
+    LogLevel::DEBUG, // level to be logged
+    ['filename' => 'ledenlijst.log'] // extra options
+);
 
 if (isset($_SERVER['PHP_AUTH_USER'])) {
-    // Try to login to SeGVl
     try {
         $user = $_SERVER['PHP_AUTH_USER'];
         $pass = $_SERVER['PHP_AUTH_PW'];
 
-        file_logging($user, 'download');
+        $client = new GroepsadminClient($user, $pass, $logger);
 
-        $client = new GroepsadminClient($user, $pass); // this will throw if user is not Leiding
+        if($client->isLoggedIn()) {
+            downloadLedenlijst($logger);
+        }
+        else {
+            authFailed('Error: Authentication failed');
+        }
     } catch (Exception $e) {
-        // print_r($e);
-        authFailed('Error: Authentication to Scouts en Gidsen Vlaanderen failed');
-    }
-
-    // Try to push the ledenlijst.xlsx file
-    try {
-        downloadLedenlijst();
-    } catch (Exception $e) {
-        // print_r($e);
-        logging('Error: Failed to open ledenlijst');
+        $logger->error($e);
+        errorOccurred('Error: Uncaught exception occurred');
     }
 } else {
-    authFailed('Error: Received no Basic Authentitication credentials');
+    authFailed('Error: Received no credentials');
 }
 
 
-function downloadLedenlijst() {
+function downloadLedenlijst($logger) {
+    $logger->debug('Starting download');
+
     $file = 'ledenlijst.xlsx';
     $download = 'ledenlijst ' . date('Y-m-d') . '.xlsx';
     // $download = 'ledenlijst ' . date('Y-m-d H.i.s') . '.xlsx';
@@ -48,14 +55,16 @@ function downloadLedenlijst() {
         header("Content-Disposition: attachment; filename=\"${download}\"");
         header("Content-length: $fsize");
 
-        while(!feof($fd)) {
-            $buffer = fread($fd, 2048);
-            echo $buffer;
-        }
+        // while(!feof($fd)) {
+        //     $buffer = fread($fd, 2048);
+        //     echo $buffer;
+        // }
     }
     else {
         throw new Exception("Could not open <$file> at {$_SERVER['DOCUMENT_ROOT']}");
     }
 
     fclose ($fd);
+
+    $logger->debug('Download successful');
 }

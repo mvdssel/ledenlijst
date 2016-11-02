@@ -1,8 +1,8 @@
 <?php
 
 // DEV only
-error_reporting(E_ALL);
-ini_set('display_errors', 'on');
+// error_reporting(E_ALL);
+// ini_set('display_errors', 'on');
 
 require_once 'GroepsadminClient.class.php';
 require_once 'vendor/autoload.php';
@@ -21,9 +21,6 @@ $logger = new Logger(
     LogLevel::DEBUG, // level to be logged
     ['filename' => 'ledenlijst.log'] // extra options
 );
-
-$_SERVER['PHP_AUTH_USER'] = 'mvdssel';
-$_SERVER['PHP_AUTH_PW'] = 'Groepsleiding 16-17';
 
 if (isset($_SERVER['PHP_AUTH_USER'])) {
     try {
@@ -47,6 +44,8 @@ if (isset($_SERVER['PHP_AUTH_USER'])) {
 }
 
 function updateLedenlijst($client, $logger) {
+    $logger->debug('Starting update');
+
     // Prevents problems with flushing output streams
     header('Content-type: text/html; charset=utf-8');
 
@@ -92,4 +91,6 @@ function updateLedenlijst($client, $logger) {
 
     write('Success!');
     write('<a href="/">Download ready</a>');
+
+    $logger->debug('Update successful');
 }
