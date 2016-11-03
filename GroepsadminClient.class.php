@@ -125,7 +125,7 @@ class GroepsadminClient
         // Argument check
         if(!isset($this->filters) || !isset($this->filters[$filter])) {
             $this->logger->error("{$this->user}\tTrying to set undefined filter $filter");
-            throw new Exception('Trying to set undefined filter');
+            throw new Exception("{$this->user}\tTrying to set undefined filter $filter");
         }
 
         // Perform set filter request
@@ -222,8 +222,8 @@ class GroepsadminClient
             $this->filters = [];
 
             for ($i = 0; $i < count($matches[1]); $i++) {
-                $filterVal = $matches[1][$i];
-                $filterKey = $matches[2][$i];
+                $filterVal = trim($matches[1][$i]);
+                $filterKey = trim($matches[2][$i]);
                 $this->filters[$filterKey] = $filterVal;
             }
 
@@ -241,7 +241,7 @@ class GroepsadminClient
      */
     private function extractBAREBONE_ME($body) {
         if(preg_match(self::BAREBONE_ME_PATTERN, $body, $matches)) {
-            $this->BAREBONE_ME = $matches[1];
+            $this->BAREBONE_ME = trim($matches[1]);
             return TRUE;
         }
         $this->logger->warning("Failed to extract BAREBONE_ME");
@@ -261,5 +261,5 @@ class GroepsadminClient
 
     // Extraction patterns
     const BAREBONE_ME_PATTERN = '|name="BAREBONE_ME"\s+value="([^"]+)"|';
-    const FILTER_PATTERN = '|value="(FILTER_AKTIVEREN_100_[^"]+)"[^>]*>\s*([^<]+)\s*(\((A2420G)\)\s*)?</option>|';
+    const FILTER_PATTERN = '|value="(FILTER_AKTIVEREN_100_[^"]+)"[^>]*>\s*([^<]+?)\s*(\(A2420G\)\s*)?</option>|';
 }

@@ -26,7 +26,7 @@ function errorOccurred($msg, $logger, $e = '') {
 function authFailed($msg = '') {
     header('WWW-Authenticate: Basic realm="Scouts en Gidsen Vlaanderen login"');
     header('HTTP/1.0 401 Unauthorized');
-    write("Authentication failed: $msg");
+    write("$msg");
     write('<a href="mailto:website@jobertus.be">volgens mij klopt er iets niet</a>');
     exit(1);
 }
